@@ -1,0 +1,53 @@
+{
+  "name": "f1dataserver",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/server/index.ts",
+    "ui:dev": "cd ui && npm run dev",
+    "ui:build": "cd ui && npm run build",
+    "start": "node dist/server/index.js",
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "sync:jolpica": "tsx src/sync/scripts/sync-jolpica.ts",
+    "sync:openf1": "tsx src/sync/scripts/sync-openf1.ts",
+    "import:dump": "tsx src/sync/scripts/import-dump.ts",
+    "db:dedup-constructors": "tsx src/sync/scripts/dedup-constructors.ts",
+    "db:dedup-drivers": "tsx src/sync/scripts/dedup-drivers.ts",
+    "sync:standings-2026": "tsx src/sync/scripts/resync-standings-2026.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.6.0",
+    "@prisma/client": "^7.6.0",
+    "@types/pg": "^8.20.0",
+    "adm-zip": "^0.5.16",
+    "axios": "^1.14.0",
+    "csv-parse": "^6.2.1",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "prisma": "^7.6.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.5.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/ws": "^8.18.1",
+    "nodemon": "^3.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

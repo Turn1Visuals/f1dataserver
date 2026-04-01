@@ -1,0 +1,18 @@
+node_modules
+.env
+
+/generated/prisma
+
+# F1 auth — token file and persistent Chrome profile
+.f1token.json
+.chrome-profile/
+
+# Runtime session/playback data
+sessions/
+
+# Built UI output
+public/assets/
+public/index.html
+
+# Scraped/third-party files
+interesting_files/

@@ -1,0 +1,316 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Reference ───────────────────────────────────────────────────────────────
+
+model Season {
+  year   Int @id
+  rounds Int
+
+  events               Event[]
+  driverStandings      DriverStanding[]
+  constructorStandings ConstructorStanding[]
+  driverSeasons        DriverSeason[]
+}
+
+model Driver {
+  id              String  @id @default(cuid())
+  jolpikaId       String? @unique @map("jolpika_id")
+  firstName       String  @map("first_name")
+  lastName        String  @map("last_name")
+  code            String?
+  permanentNumber Int?    @map("permanent_number")
+  dob             DateTime? @map("date_of_birth") @db.Date
+  nationality     String?
+  headshotUrl     String? @map("headshot_url")
+  countryCode     String? @map("country_code")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  driverSeasons        DriverSeason[]
+  results              Result[]
+  qualifyingResults    QualifyingResult[]
+  driverStandings      DriverStanding[]
+  lapTimes             LapTime[]
+  pitStops             PitStop[]
+
+  @@map("drivers")
+}
+
+model Constructor {
+  id          String  @id @default(cuid())
+  jolpikaId   String? @unique @map("jolpika_id")
+  name        String
+  nationality String?
+  teamColour  String? @map("team_colour")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  driverSeasons        DriverSeason[]
+  results              Result[]
+  qualifyingResults    QualifyingResult[]
+  constructorStandings ConstructorStanding[]
+
+  @@map("constructors")
+}
+
+model Circuit {
+  id               String  @id @default(cuid())
+  jolpikaId        String? @unique @map("jolpika_id")
+  openf1CircuitKey Int?    @map("openf1_circuit_key")
+  name             String
+  locality         String?
+  country          String?
+  lat              Float?
+  lng              Float?
+  circuitType      String? @map("circuit_type")
+  circuitImageUrl  String? @map("circuit_image_url")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  events Event[]
+
+  @@map("circuits")
+}
+
+// ─── Driver ↔ Team per season ─────────────────────────────────────────────────
+
+model DriverSeason {
+  id            String @id @default(cuid())
+  driverId      String @map("driver_id")
+  constructorId String @map("constructor_id")
+  seasonYear    Int    @map("season_year")
+  driverNumber  Int?   @map("driver_number")
+
+  driver      Driver      @relation(fields: [driverId], references: [id])
+  constructor Constructor @relation(fields: [constructorId], references: [id])
+  season      Season      @relation(fields: [seasonYear], references: [year])
+
+  @@unique([driverId, constructorId, seasonYear])
+  @@map("driver_seasons")
+}
+
+// ─── Events & Sessions ────────────────────────────────────────────────────────
+
+model Event {
+  id                  String    @id @default(cuid())
+  seasonYear          Int       @map("season_year")
+  round               Int
+  jolpikaName         String?   @map("jolpika_name")
+  officialName        String?   @map("official_name")
+  openf1MeetingKey    Int?      @map("openf1_meeting_key")
+  circuitId           String    @map("circuit_id")
+  date                DateTime  @db.Date
+  location            String?
+  country             String?
+  countryCode         String?   @map("country_code")
+  flagUrl             String?   @map("flag_url")
+  gmtOffset           String?   @map("gmt_offset")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  season   Season   @relation(fields: [seasonYear], references: [year])
+  circuit  Circuit  @relation(fields: [circuitId], references: [id])
+  sessions Session[]
+
+  @@unique([seasonYear, round])
+  @@map("events")
+}
+
+model Session {
+  id               String    @id @default(cuid())
+  eventId          String    @map("event_id")
+  openf1SessionKey Int?      @map("openf1_session_key")
+  type             SessionType
+  name             String?
+  dateStart        DateTime? @map("date_start")
+  dateEnd          DateTime? @map("date_end")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  event                Event                @relation(fields: [eventId], references: [id])
+  results              Result[]
+  qualifyingResults    QualifyingResult[]
+  driverStandings      DriverStanding[]
+  constructorStandings ConstructorStanding[]
+  lapTimes             LapTime[]
+  pitStops             PitStop[]
+
+  @@map("sessions")
+}
+
+enum SessionType {
+  PRACTICE_1
+  PRACTICE_2
+  PRACTICE_3
+  QUALIFYING
+  SPRINT_QUALIFYING
+  SPRINT
+  RACE
+
+  @@map("session_type")
+}
+
+// ─── Results ─────────────────────────────────────────────────────────────────
+
+// Covers race and sprint (session type distinguishes them)
+model Result {
+  id                  String  @id @default(cuid())
+  sessionId           String  @map("session_id")
+  driverId            String  @map("driver_id")
+  constructorId       String  @map("constructor_id")
+  position            Int?
+  positionText        String? @map("position_text")
+  points              Float?
+  grid                Int?
+  laps                Int?
+  status              String?
+  timeMs              BigInt? @map("time_ms")
+  fastestLapRank      Int?    @map("fastest_lap_rank")
+  fastestLapLap       Int?    @map("fastest_lap_lap")
+  fastestLapTimeMs    BigInt? @map("fastest_lap_time_ms")
+  fastestLapSpeedKph  Float?  @map("fastest_lap_speed_kph")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  session     Session     @relation(fields: [sessionId], references: [id])
+  driver      Driver      @relation(fields: [driverId], references: [id])
+  constructor Constructor @relation(fields: [constructorId], references: [id])
+
+  @@unique([sessionId, driverId])
+  @@map("results")
+}
+
+// Covers qualifying and sprint qualifying
+model QualifyingResult {
+  id            String  @id @default(cuid())
+  sessionId     String  @map("session_id")
+  driverId      String  @map("driver_id")
+  constructorId String  @map("constructor_id")
+  position      Int?
+  q1Ms          BigInt? @map("q1_ms")
+  q2Ms          BigInt? @map("q2_ms")
+  q3Ms          BigInt? @map("q3_ms")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  session     Session     @relation(fields: [sessionId], references: [id])
+  driver      Driver      @relation(fields: [driverId], references: [id])
+  constructor Constructor @relation(fields: [constructorId], references: [id])
+
+  @@unique([sessionId, driverId])
+  @@map("qualifying_results")
+}
+
+// ─── Standings ────────────────────────────────────────────────────────────────
+
+model DriverStanding {
+  id            String @id @default(cuid())
+  seasonYear    Int    @map("season_year")
+  sessionId     String @map("session_id")
+  driverId      String @map("driver_id")
+  constructorId String @map("constructor_id")
+  points        Float
+  position      Int
+  wins          Int    @default(0)
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  season  Season  @relation(fields: [seasonYear], references: [year])
+  session Session @relation(fields: [sessionId], references: [id])
+  driver  Driver  @relation(fields: [driverId], references: [id])
+
+  @@unique([sessionId, driverId])
+  @@map("driver_standings")
+}
+
+model ConstructorStanding {
+  id            String @id @default(cuid())
+  seasonYear    Int    @map("season_year")
+  sessionId     String @map("session_id")
+  constructorId String @map("constructor_id")
+  points        Float
+  position      Int
+  wins          Int    @default(0)
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  season      Season      @relation(fields: [seasonYear], references: [year])
+  session     Session     @relation(fields: [sessionId], references: [id])
+  constructor Constructor @relation(fields: [constructorId], references: [id])
+
+  @@unique([sessionId, constructorId])
+  @@map("constructor_standings")
+}
+
+// ─── Lap & Pit data ───────────────────────────────────────────────────────────
+
+model LapTime {
+  id        String @id @default(cuid())
+  sessionId String @map("session_id")
+  driverId  String @map("driver_id")
+  lap       Int
+  timeMs    BigInt @map("time_ms")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  session Session @relation(fields: [sessionId], references: [id])
+  driver  Driver  @relation(fields: [driverId], references: [id])
+
+  @@unique([sessionId, driverId, lap])
+  @@map("lap_times")
+}
+
+model PitStop {
+  id         String @id @default(cuid())
+  sessionId  String @map("session_id")
+  driverId   String @map("driver_id")
+  stopNumber Int    @map("stop_number")
+  lap        Int
+  durationMs BigInt @map("duration_ms")
+
+  source    String
+  createdAt DateTime @default(now()) @map("created_at")
+  syncedAt  DateTime? @map("synced_at")
+
+  session Session @relation(fields: [sessionId], references: [id])
+  driver  Driver  @relation(fields: [driverId], references: [id])
+
+  @@unique([sessionId, driverId, stopNumber])
+  @@map("pit_stops")
+}

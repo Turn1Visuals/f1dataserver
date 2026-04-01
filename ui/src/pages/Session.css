@@ -1,0 +1,340 @@
+.s-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.s-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.s-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text3);
+}
+
+.s-hint {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.s-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.s-badge::before {
+  content: "";
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.s-badge.green  { color: var(--green);  background: rgba(74,222,128,.1); }
+.s-badge.red    { color: #f87171;        background: rgba(248,113,113,.1); }
+.s-badge.amber  { color: var(--amber);  background: rgba(245,158,11,.1); }
+.s-badge.blue   { color: var(--blue);   background: rgba(59,130,246,.1); }
+.s-badge.dim    { color: var(--text3);  background: #1e1e1e; }
+.s-badge.dim::before { background: var(--text3); }
+
+.s-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.s-panel-desc {
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.6;
+}
+
+.s-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #1e1e1e;
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+
+.s-btn:hover:not(:disabled) { border-color: #555; background: #252525; }
+.s-btn:disabled { opacity: 0.4; cursor: default; }
+
+.s-btn-primary {
+  background: #1a1a2e;
+  border-color: #2a2a5a;
+  color: #93c5fd;
+}
+.s-btn-primary:hover:not(:disabled) { background: #1e1e38; border-color: #3a3a7a; }
+
+.s-btn-danger {
+  background: #1a0000;
+  border-color: #5a1a1a;
+  color: #f87171;
+}
+.s-btn-danger:hover:not(:disabled) { background: #200000; border-color: #7a2a2a; }
+
+.s-btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.s-input {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  font-family: var(--mono);
+}
+.s-input:focus { border-color: #555; }
+
+/* Playback */
+.s-session-path {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 14px;
+}
+
+.s-progress-track {
+  height: 4px;
+  background: #2a2a2a;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.s-progress-bar {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width 0.5s linear;
+}
+
+.s-time-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+  margin-top: 6px;
+  margin-bottom: 14px;
+}
+
+.s-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Cached sessions */
+.s-cached-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.s-cached-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg2);
+  border: 1px solid #1e1e1e;
+  border-radius: 6px;
+}
+
+.s-cached-path {
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+}
+
+.s-cached-size {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+/* Section sub-label */
+.s-section-sub {
+  font-weight: 400;
+  color: var(--text2);
+  margin-left: 4px;
+}
+
+/* Event timetable */
+.s-timetable {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.s-timetable-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.s-timetable-row.live {
+  border-color: var(--green);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.s-timetable-label {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text1);
+}
+
+.s-timetable-time {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+
+/* Raw data feed */
+.s-feed-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.s-feed-count {
+  font-size: 11px;
+  color: var(--text3);
+  font-family: var(--mono);
+  white-space: nowrap;
+  margin-left: 4px;
+}
+
+.s-feed-log {
+  height: 340px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px 0;
+}
+
+.s-feed-entry {
+  display: flex;
+  gap: 10px;
+  padding: 2px 14px;
+  line-height: 1.6;
+  border-bottom: 1px solid #111;
+}
+
+.s-feed-entry:hover { background: #1a1a1a; }
+
+.s-feed-ts {
+  color: var(--text3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.s-feed-topic {
+  color: var(--accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 160px;
+}
+
+.s-feed-data {
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Season index */
+.s-meetings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.s-meeting {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.s-meeting-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.s-meeting-header:hover { background: #1e1e1e; }
+
+.s-meeting-chevron {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text3);
+}
+
+.s-sessions-list {
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.s-session-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.s-session-item:last-child { border-bottom: none; }
+
+.s-session-name {
+  font-size: 12px;
+  color: #ccc;
+  min-width: 120px;
+}
