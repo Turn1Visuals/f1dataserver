@@ -43,6 +43,12 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Shutdown
+app.post("/shutdown", (_req, res) => {
+  res.json({ ok: true });
+  setTimeout(() => process.exit(0), 200);
+});
+
 // DB stats
 app.get("/stats", async (_req, res) => {
   const [sessions, results, lapTimes] = await Promise.all([

@@ -14,7 +14,8 @@ import type { TimelineEvent } from "./fetch.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 function getSessionsRoot(): string {
-  const root = process.env.SESSIONS_DIR ?? join(__dirname, "../../sessions");
+  const base = process.env["F1_DATA_DIR"] ?? join(__dirname, "../..");
+  const root = process.env.SESSIONS_DIR ?? join(base, "sessions");
   if (!existsSync(root)) mkdirSync(root, { recursive: true });
   return root;
 }

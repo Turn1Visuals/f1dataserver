@@ -9,7 +9,8 @@ const MV_HEADERS = { "x-mv-api-terms-accepted": "true" };
 const TTL_MS     = 6 * 60 * 60 * 1000; // 6 hours
 
 function getCacheDir(): string {
-  const dir = join(__dirname, "../../sessions/circuits");
+  const base = process.env["F1_DATA_DIR"] ?? join(__dirname, "../..");
+  const dir = join(base, "sessions/circuits");
   mkdirSync(dir, { recursive: true });
   return dir;
 }

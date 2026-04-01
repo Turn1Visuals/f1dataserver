@@ -9,9 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const F1_LOGIN_URL =
   "https://account.formula1.com/#/en/login?redirect=https%3A%2F%2Ff1tv.formula1.com%2F";
 const COOKIE_NAME = "login-session";
-const TOKEN_FILE = join(__dirname, "../../.f1token.json");
+const DATA_DIR = process.env["F1_DATA_DIR"] ?? join(__dirname, "../..");
+const TOKEN_FILE = join(DATA_DIR, ".f1token.json");
 // Persistent Chrome profile — user logs in once, session cookie is reused on future logins
-const CHROME_PROFILE_DIR = join(__dirname, "../../.chrome-profile");
+const CHROME_PROFILE_DIR = join(DATA_DIR, ".chrome-profile");
 const DEBUG_PORT = 9229;
 const LOGIN_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
 

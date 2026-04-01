@@ -16,3 +16,11 @@ public/index.html
 
 # Scraped/third-party files
 interesting_files/
+
+# Claude Code local settings
+.claude/
+
+# Tray build artifacts
+tray/icon.png
+tray/resources/server.cjs
+tray/dist/

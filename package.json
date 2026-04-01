@@ -18,7 +18,8 @@
     "import:dump": "tsx src/sync/scripts/import-dump.ts",
     "db:dedup-constructors": "tsx src/sync/scripts/dedup-constructors.ts",
     "db:dedup-drivers": "tsx src/sync/scripts/dedup-drivers.ts",
-    "sync:standings-2026": "tsx src/sync/scripts/resync-standings-2026.ts"
+    "sync:standings-2026": "tsx src/sync/scripts/resync-standings-2026.ts",
+    "tray": "cd tray && npm start"
   },
   "keywords": [],
   "author": "",

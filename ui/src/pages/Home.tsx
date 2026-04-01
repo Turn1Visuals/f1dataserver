@@ -68,6 +68,11 @@ export default function Home() {
     }
   };
 
+  const shutdown = async () => {
+    if (!confirm("Shut down the server?")) return;
+    try { await fetch(`${BASE}/shutdown`, { method: "POST" }); } catch { /* expected */ }
+  };
+
   const fmt = (n: number | null) => n !== null ? n.toLocaleString() : "—";
 
   return (
@@ -80,6 +85,7 @@ export default function Home() {
         <div className="status-bar">
           <span className="online-dot">Online</span>
           <span>{ts}</span>
+          <button className="btn btn-stop" style={{ marginLeft: "auto" }} onClick={shutdown}>Shut down</button>
         </div>
       </div>
 

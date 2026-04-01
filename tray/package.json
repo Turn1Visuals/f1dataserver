@@ -1,0 +1,53 @@
+{
+  "name": "f1dataserver-tray",
+  "version": "1.0.0",
+  "description": "System tray manager for F1 Data Server",
+  "main": "main.js",
+  "scripts": {
+    "build-icon": "node build-icon.js",
+    "build-server": "node build-server.js",
+    "build": "npm run build-icon && npm run build-server && electron-builder",
+    "start": "electron ."
+  },
+  "build": {
+    "appId": "com.turn1visuals.f1dataserver",
+    "productName": "F1 Data Server",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true
+    },
+    "files": [
+      "main.js"
+    ],
+    "extraResources": [
+      { "from": "resources/server.cjs", "to": "server.cjs" },
+      { "from": "icon.png", "to": "icon.png" },
+      { "from": "../node_modules/@prisma/adapter-pg", "to": "node_modules/@prisma/adapter-pg" },
+      { "from": "../node_modules/pg", "to": "node_modules/pg" },
+      { "from": "../node_modules/pg-pool", "to": "node_modules/pg-pool" },
+      { "from": "../node_modules/pg-types", "to": "node_modules/pg-types" },
+      { "from": "../node_modules/pg-connection-string", "to": "node_modules/pg-connection-string" },
+      { "from": "../node_modules/pg-int8", "to": "node_modules/pg-int8" },
+      { "from": "../node_modules/postgres-array", "to": "node_modules/postgres-array" },
+      { "from": "../node_modules/postgres-bytea", "to": "node_modules/postgres-bytea" },
+      { "from": "../node_modules/postgres-date", "to": "node_modules/postgres-date" },
+      { "from": "../node_modules/postgres-interval", "to": "node_modules/postgres-interval" },
+      { "from": "../node_modules/xtend", "to": "node_modules/xtend" }
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  },
+  "devDependencies": {
+    "electron": "^41.1.0",
+    "electron-builder": "^26.8.1",
+    "esbuild": "^0.27.4",
+    "sharp": "^0.34.5"
+  }
+}
