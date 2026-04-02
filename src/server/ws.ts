@@ -51,6 +51,10 @@ export function initWss(server: Server): WebSocketServer {
     broadcast({ type: "snapshot", state: sessionManager.getSnapshot() });
   });
 
+  sessionManager.on("statusChanged", () => {
+    broadcast({ type: "status", ...sessionManager.getStatus() });
+  });
+
   sessionManager.on("connected", () => {
     broadcast({ type: "status", ...sessionManager.getStatus() });
   });

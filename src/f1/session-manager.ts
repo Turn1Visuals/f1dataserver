@@ -208,6 +208,7 @@ export class SessionManager extends EventEmitter {
 
     this.playbackTimer = setInterval(() => this._playbackTick(), 50);
     console.log(`[f1/session] Playback started at speed ${speed}x`);
+    this.emit("statusChanged");
   }
 
   pause(): void {
@@ -221,6 +222,7 @@ export class SessionManager extends EventEmitter {
       this.playbackTimer = null;
     }
     console.log("[f1/session] Playback paused");
+    this.emit("statusChanged");
   }
 
   async seek(offsetMs: number): Promise<void> {
@@ -240,6 +242,7 @@ export class SessionManager extends EventEmitter {
     }
     this.delayedState = { ...this.liveState };
     this.emit("snapshotReady");
+    this.emit("statusChanged");
 
     if (wasPlaying) this.play(this.playbackSpeed);
   }
