@@ -11,7 +11,7 @@ A local F1 data hub that fetches, stores, and serves Formula 1 data from multipl
 ```
 [External Sources]          [This Server]              [Your Projects]
   Jolpica (CSV dump)  ──►  PostgreSQL database  ──►   REST API
-  Jolpica (API)       ──►  (f1data)             ──►   (port 5320)
+  Jolpika (API)       ──►  (f1data)             ──►   (port 5320)
   OpenF1 (API)        ──►                       ──►   WebSocket /f1
   F1 SignalR          ──►  Session hub           ──►   Web UI (port 5320)
 ```
@@ -20,8 +20,8 @@ A local F1 data hub that fetches, stores, and serves Formula 1 data from multipl
 
 | Source | Role | Coverage |
 |--------|------|----------|
-| **Jolpica CSV dump** | Initial full history load | 1950–present (14-day delay) |
-| **Jolpica API** | Current season results | Near real-time |
+| **Jolpika CSV dump** | Initial full history load | 1950–present (14-day delay) |
+| **Jolpika API** | Current season results | Near real-time |
 | **OpenF1 API** | Enrichment: team colours, headshots, session detail | 2023–present |
 | **F1 SignalR** | Live timing stream | Real-time |
 | **F1 static archive** | Historic session playback | 2018–present |
@@ -34,6 +34,7 @@ A local F1 data hub that fetches, stores, and serves Formula 1 data from multipl
 - Driver and constructor championship standings
 - Lap times and pit stops
 - Driver–team mapping per season
+- F1 media references (`f1Reference` on drivers, `f1Slug` on constructors) for CDN image URLs
 
 ---
 
@@ -90,7 +91,7 @@ Compiles the React frontend into `public/`. The server serves it automatically.
 
 ### 7. Load full history
 
-Downloads the Jolpica CSV dump (~13MB) and imports everything from 1950 to present:
+Downloads the Jolpika CSV dump (~13MB) and imports everything from 1950 to present:
 
 ```bash
 npm run import:dump
@@ -102,10 +103,10 @@ npm run import:dump
 
 ### 8. Top up the current season
 
-Pull the latest results directly from the Jolpica API (no delay):
+Pull the latest results directly from the Jolpika API (no delay):
 
 ```bash
-npm run sync:jolpica -- 2026 2026
+npm run sync:jolpika -- 2026 2026
 ```
 
 ### 9. Enrich with OpenF1 metadata
@@ -159,9 +160,10 @@ The server includes a built-in web application at `http://localhost:5320`.
 |------|-----|-------------|
 | **Home** | `/` | Live DB stats, Prisma Studio toggle, endpoint reference, data sources, shutdown button |
 | **API Docs** | `/docs` | Interactive Swagger UI — browse and test all endpoints |
-| **Schema** | `/schema` | Mermaid ER diagram of all 13 tables + field reference |
+| **Schema** | `/schema` | Mermaid ER diagram of all tables + field reference |
 | **Session** | `/session` | F1 account login, live connect, playback, raw data feed |
-| **Standings** | `/standings` | Driver and constructor standings by year and round |
+| **Standings** | `/standings` | Driver and constructor standings by year and round with team logos |
+| **Mapping** | `/mapping` | Map F1 CDN slugs and references to drivers and constructors |
 
 ### Developing the UI
 
@@ -181,9 +183,34 @@ npm run ui:dev
 
 ---
 
+## F1 Reference Mapping
+
+Drivers and constructors have optional F1 CDN reference fields used to build media URLs:
+
+- `f1Reference` on Driver — e.g. `LANNOR01` (defaults to first 3 chars of first + last name + `01`)
+- `f1Slug` on Constructor — e.g. `mclaren`, `redbullracing`
+
+These can be set manually via the Mapping page in the UI, or via the API:
+
+```
+PATCH /drivers/:id/meta        { f1Reference }
+PATCH /constructors/:id/meta   { f1Slug }
+```
+
+Example CDN URLs built from these fields:
+```
+Driver headshot:  .../content/dam/fom-website/drivers/.../lannor01.png
+Team logo:        https://media.formula1.com/image/upload/common/f1/{year}/{slug}/{year}{slug}logowhite.svg
+Driver card:      common/f1/{year}/{slug}/{driverref}/{year}{slug}{driverref}right
+```
+
+> Note: F1 is not always consistent with slugs across seasons. Since team rebrands create new constructor records (AlphaTauri → RB etc.), `f1Slug` is stored per constructor record.
+
+---
+
 ## F1 Live Timing
 
-The server can connect to F1's SignalR hub for real-time timing data, or replay cached historic sessions. All connected WebSocket clients receive the same stream.
+The server can connect to F1's SignalR hub for real-time timing data, or replay cached historic sessions. All connected WebSocket clients receive the same stream and stay in sync — play, pause, and seek are broadcast to all clients.
 
 ### Authentication
 
@@ -204,21 +231,62 @@ Click **Connect Live** in the Session UI, or:
 POST /session/live
 ```
 
-The server negotiates with `livetiming.formula1.com`, subscribes to 20 topics, and streams data to all WebSocket clients. If the connection drops before subscribing, it retries immediately and automatically. Click **Disconnect** (or `POST /session/live/disconnect`) to abort.
+The server negotiates with `livetiming.formula1.com`, subscribes to 22 topics, and streams data to all WebSocket clients. If the connection drops before subscribing, it retries immediately and automatically. Click **Disconnect** (or `POST /session/live/disconnect`) to abort.
+
+### Subscribed topics
+
+| Topic | Sessions |
+|-------|----------|
+| `DriverList`, `SessionInfo`, `SessionStatus`, `SessionData` | All |
+| `TimingData`, `TimingAppData`, `TimingStats` | All |
+| `RaceControlMessages`, `TrackStatus`, `ExtrapolatedClock` | All |
+| `TopThree`, `WeatherData`, `Position.z`, `CarData.z` | All |
+| `LapCount`, `ChampionshipPrediction`, `DriverRaceInfo` | Race & Sprint only |
+| `Heartbeat`, `AudioStreams`, `TeamRadio`, `ContentStreams`, `RcmSeries` | Live only |
 
 ### Session playback
 
 Historic sessions are fetched on demand from the F1 static archive and cached as NDJSON on disk (`sessions/`). Once cached they load instantly without re-fetching.
 
 ```
+sessions/
+  2026/
+    2026-03-29_Japanese_Grand_Prix/
+      2026-03-27_Practice_1.ndjson
+      2026-03-28_Qualifying.ndjson
+      2026-03-29_Race.ndjson
+```
+
+```
 GET  /session/index?year=2026     → list all meetings and sessions
-POST /session/load                → fetch (if not cached) and load a session
-POST /session/play                → start playback { speed: 1 }
+POST /session/load                → fetch (if not cached) and load a session for playback
+POST /session/play                → start playback { speed: 1|2|4|8 }
 POST /session/pause
+POST /session/seek                → seek to offset { offsetMs }
 GET  /session/cached              → list sessions cached on disk
 ```
 
 One session is active at a time — connecting live or loading a playback session always unloads the previous one first.
+
+### Session snapshots
+
+```
+GET  /session/snapshot                          → full merged state of active session
+GET  /session/snapshot/final?path=...           → final state of any cached session
+POST /session/final-state  { sessionPath }      → fetch if needed, return final state
+```
+
+`POST /session/final-state` is the recommended way to get end-of-session data from an app — it fetches and caches the session if not already on disk, then returns the fully merged final state in one call:
+
+```js
+fetch('/session/final-state', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ sessionPath: '2026/2026-03-29_Japanese_Grand_Prix/2026-03-29_Race/' })
+})
+  .then(r => r.json())
+  .then(handleState)
+```
 
 ### Broadcast delay
 
@@ -230,12 +298,12 @@ Also configurable in the Session UI with presets (0 / 15 / 30 / 45 / 60s).
 
 ### WebSocket stream
 
-Connect to `ws://localhost:5320/f1`. On connect you receive the current status and a full state snapshot. Ongoing messages:
+Connect to `ws://localhost:5320/f1`. On connect you receive the current status and a full state snapshot immediately. Any play/pause/seek by any connected client is broadcast to all.
 
 | Type | Payload | Description |
 |------|---------|-------------|
-| `status` | `SessionStatus` | Mode, offset, speed, delay, etc. |
-| `snapshot` | `{ state }` | Full merged state across all topics |
+| `status` | `SessionStatus` | Mode, offset, speed, delay, etc. Sent on connect and on any state change |
+| `snapshot` | `{ state }` | Full merged state across all topics — sent on connect |
 | `data` | `{ topic, data }` | Individual timing update |
 | `circuit` | `{ data }` | Circuit layout from MultiViewer API |
 | `liveDisconnected` | — | Live feed dropped |
@@ -244,7 +312,7 @@ Connect to `ws://localhost:5320/f1`. On connect you receive the current status a
 
 ### Raw data feed
 
-The Session page shows a live scrolling log of all incoming `data` messages. Filter by topic, pause/resume, or clear. Capped at 500 entries.
+The Session page shows a live scrolling log of all incoming messages including the initial snapshot (prefixed `[snapshot]`). Filter by topic name or clear the log. Capped at 500 entries.
 
 ---
 
@@ -257,7 +325,7 @@ The server keeps historical data up to date automatically.
 | Normal (no recent race) | Every 24 hours | Sync if stale |
 | Within 48h after a race | Every 30 minutes | Sync as soon as data is available |
 
-Each sync runs Jolpica (results + standings) and OpenF1 (enrichment) for the current season.
+Each sync runs Jolpika (results + standings) and OpenF1 (enrichment) for the current season.
 
 ---
 
@@ -283,17 +351,19 @@ GET /seasons/:year
 ### Drivers
 
 ```
-GET /drivers
-GET /drivers?season=2026
-GET /drivers/:id
+GET   /drivers
+GET   /drivers?season=2026
+GET   /drivers/:id
+PATCH /drivers/:id/meta    { f1Reference }
 ```
 
 ### Constructors
 
 ```
-GET /constructors
-GET /constructors?season=2026
-GET /constructors/:id
+GET   /constructors
+GET   /constructors?season=2026
+GET   /constructors/:id
+PATCH /constructors/:id/meta    { f1Slug }
 ```
 
 ### Circuits
@@ -318,7 +388,7 @@ GET /standings/:year/drivers?round=N
 GET /standings/:year/constructors?round=N
 ```
 
-Omit `round` to get the latest available round. Standings are stored per Race session and updated automatically each sync.
+Omit `round` to get the latest available round. Response includes `teamSlug` for CDN logo URLs.
 
 ### F1 status
 
@@ -332,12 +402,16 @@ GET /streaming-status   → F1 live timing status (15-sec cache)
 ```
 GET  /session/status
 GET  /session/circuit
+GET  /session/snapshot
+GET  /session/snapshot/final?path=...
+POST /session/final-state           { sessionPath }
 POST /session/live
 POST /session/live/disconnect
-POST /session/load              { sessionPath }
-POST /session/play              { speed }
+POST /session/load                  { sessionPath }
+POST /session/play                  { speed }
 POST /session/pause
-POST /session/delay             { ms }
+POST /session/seek                  { offsetMs }
+POST /session/delay                 { ms }
 GET  /session/index?year=2026
 GET  /session/cached
 GET  /session/auth/status
@@ -375,6 +449,9 @@ npm run db:dedup-drivers
 
 # Re-sync standings for a specific season if data was lost
 npm run sync:standings-2026
+
+# Migrate session cache from old folder layout to flat .ndjson files
+npm run migrate:cache-layout
 ```
 
 ---
@@ -430,7 +507,8 @@ f1dataserver/
 │       │   ├── ApiDocs.tsx            ← Swagger UI embed
 │       │   ├── Schema.tsx             ← Mermaid ER diagram
 │       │   ├── Session.tsx            ← F1 session control + raw data feed
-│       │   └── Standings.tsx          ← driver/constructor standings browser
+│       │   ├── Standings.tsx          ← driver/constructor standings with team logos
+│       │   └── Mapping.tsx            ← F1 reference mapping (f1Reference / f1Slug)
 │       ├── App.tsx                    ← sidebar layout + routing
 │       └── main.tsx
 ├── public/                            ← built UI output (served by Express)
@@ -441,10 +519,10 @@ f1dataserver/
 │   │   └── client.ts                  ← Prisma client singleton
 │   ├── f1/
 │   │   ├── auth.ts                    ← F1 token management + Chrome CDP login
-│   │   ├── livefeed.ts                ← F1 SignalR WebSocket client
+│   │   ├── livefeed.ts                ← F1 SignalR WebSocket client (22 topics)
 │   │   ├── session-manager.ts         ← live/playback hub with delay buffer
 │   │   ├── fetch.ts                   ← F1 static archive fetcher
-│   │   ├── cache.ts                   ← NDJSON session cache
+│   │   ├── cache.ts                   ← NDJSON session cache (flat file per session)
 │   │   └── circuits.ts                ← circuit layout fetcher (MultiViewer API)
 │   ├── server/
 │   │   ├── index.ts                   ← Express app entry point
@@ -452,29 +530,30 @@ f1dataserver/
 │   │   ├── ws.ts                      ← WebSocket server (/f1)
 │   │   └── routes/
 │   │       ├── seasons.ts
-│   │       ├── drivers.ts
-│   │       ├── constructors.ts
+│   │       ├── drivers.ts             ← includes PATCH /:id/meta
+│   │       ├── constructors.ts        ← includes PATCH /:id/meta
 │   │       ├── circuits.ts
 │   │       ├── events.ts
-│   │       ├── standings.ts           ← driver/constructor standings
+│   │       ├── standings.ts           ← driver/constructor standings with teamSlug
 │   │       ├── event-tracker.ts       ← F1 event tracker proxy
 │   │       ├── streaming-status.ts    ← F1 streaming status proxy
-│   │       ├── session.ts             ← session control endpoints
+│   │       ├── session.ts             ← session control + snapshot endpoints
 │   │       ├── auth.ts                ← F1 auth endpoints
 │   │       └── studio.ts              ← Prisma Studio start/stop
 │   └── sync/
 │       ├── scheduler.ts               ← automatic update scheduler
 │       ├── startup-sync.ts
 │       ├── sources/
-│       │   ├── jolpica.ts
+│       │   ├── jolpika.ts
 │       │   └── openf1.ts
 │       └── scripts/
 │           ├── import-dump.ts
-│           ├── sync-jolpica.ts
+│           ├── sync-jolpika.ts
 │           ├── sync-openf1.ts
 │           ├── dedup-constructors.ts  ← one-time duplicate cleanup
 │           ├── dedup-drivers.ts       ← one-time duplicate cleanup
-│           └── resync-standings-2026.ts
+│           ├── resync-standings-2026.ts
+│           └── migrate-cache-layout.ts ← one-time cache folder migration
 ├── sessions/                          ← cached session NDJSON files (gitignored)
 ├── .chrome-profile/                   ← persistent Chrome profile (gitignored)
 ├── .f1token.json                      ← saved F1 token (gitignored)
@@ -487,3 +566,4 @@ f1dataserver/
 
 - GraphQL API alongside REST
 - Tray app: download and install server updates from GitHub releases
+- Per-connection session state (independent playback per client)

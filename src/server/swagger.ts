@@ -30,6 +30,7 @@ const options: swaggerJsdoc.Options = {
             nationality: { type: "string", example: "Dutch" },
             headshotUrl: { type: "string", nullable: true },
             countryCode: { type: "string", example: "NLD", nullable: true },
+            f1Reference: { type: "string", example: "MAXVER01", nullable: true, description: "F1 CDN driver reference. Defaults to first3(firstName)+first3(lastName)+01 if not set." },
           },
         },
         Constructor: {
@@ -39,6 +40,7 @@ const options: swaggerJsdoc.Options = {
             name: { type: "string", example: "Red Bull" },
             nationality: { type: "string", example: "Austrian" },
             teamColour: { type: "string", example: "#3671C6", nullable: true },
+            f1Slug: { type: "string", example: "redbullracing", nullable: true, description: "F1 CDN team slug used for logo and asset URLs." },
           },
         },
         Circuit: {
@@ -186,6 +188,21 @@ const options: swaggerJsdoc.Options = {
           },
         },
       },
+      "/drivers/{id}/meta": {
+        patch: {
+          tags: ["Drivers"],
+          summary: "Update driver F1 reference",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { type: "object", properties: { f1Reference: { type: "string", example: "MAXVER01", nullable: true } } } } },
+          },
+          responses: {
+            "200": { description: "Updated driver" },
+            "404": { description: "Driver not found" },
+          },
+        },
+      },
       "/constructors": {
         get: {
           tags: ["Constructors"],
@@ -207,6 +224,21 @@ const options: swaggerJsdoc.Options = {
           responses: {
             "200": { description: "Constructor detail", content: { "application/json": { schema: { $ref: "#/components/schemas/Constructor" } } } },
             "404": { description: "Constructor not found", content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } } },
+          },
+        },
+      },
+      "/constructors/{id}/meta": {
+        patch: {
+          tags: ["Constructors"],
+          summary: "Update constructor F1 slug",
+          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { type: "object", properties: { f1Slug: { type: "string", example: "redbullracing", nullable: true } } } } },
+          },
+          responses: {
+            "200": { description: "Updated constructor" },
+            "404": { description: "Constructor not found" },
           },
         },
       },
@@ -450,6 +482,53 @@ const options: swaggerJsdoc.Options = {
           tags: ["Session"],
           summary: "List locally cached sessions",
           responses: { "200": { description: "Array of cached session paths with size" } },
+        },
+      },
+      "/session/seek": {
+        post: {
+          tags: ["Session"],
+          summary: "Seek to position",
+          requestBody: { required: true, content: { "application/json": { schema: { type: "object", properties: { offsetMs: { type: "integer", example: 3600000 } } } } } },
+          responses: { "200": { description: "Seeked to position" } },
+        },
+      },
+      "/session/snapshot": {
+        get: {
+          tags: ["Session"],
+          summary: "Get current session state snapshot",
+          description: "Returns the full merged state of all topics for the currently active session.",
+          responses: {
+            "200": { description: "Full merged topic state" },
+            "404": { description: "No active session" },
+          },
+        },
+      },
+      "/session/snapshot/final": {
+        get: {
+          tags: ["Session"],
+          summary: "Get final state of a cached session",
+          description: "Returns the fully merged end state of any cached session. Does not affect the active session.",
+          parameters: [{ name: "path", in: "query", required: true, schema: { type: "string", example: "2026/2026-03-29_Japanese_Grand_Prix/2026-03-29_Race/" } }],
+          responses: {
+            "200": { description: "Full merged final state" },
+            "404": { description: "Session not cached" },
+          },
+        },
+      },
+      "/session/final-state": {
+        post: {
+          tags: ["Session"],
+          summary: "Fetch session if needed and return final state",
+          description: "Fetches and caches the session from the F1 archive if not already on disk, then returns the fully merged final state. Single call — no separate load step needed.",
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { type: "object", properties: { sessionPath: { type: "string", example: "2026/2026-03-29_Japanese_Grand_Prix/2026-03-29_Race/" } } } } },
+          },
+          responses: {
+            "200": { description: "Full merged final state" },
+            "400": { description: "sessionPath required" },
+            "500": { description: "Server error" },
+          },
         },
       },
       "/session/circuit": {
