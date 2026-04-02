@@ -25,6 +25,7 @@ function computeDefaultRef(firstName: string, lastName: string): string {
 }
 
 export default function Mapping() {
+  const [year, setYear] = useState(new Date().getFullYear());
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [constructors, setConstructors] = useState<Constructor[]>([]);
   const [tab, setTab] = useState<"drivers" | "constructors">("constructors");
@@ -34,11 +35,11 @@ export default function Mapping() {
   const [driverEdits, setDriverEdits] = useState<Record<string, string>>({});
   const [constructorEdits, setConstructorEdits] = useState<Record<string, string>>({});
 
-  const load = async () => {
+  const load = async (y: number) => {
     setLoading(true);
     const [driversRaw, constructorsRaw] = await Promise.all([
-      fetch(`${BASE}/drivers`).then(r => r.json()),
-      fetch(`${BASE}/constructors`).then(r => r.json()),
+      fetch(`${BASE}/drivers?season=${y}`).then(r => r.json()),
+      fetch(`${BASE}/constructors?season=${y}`).then(r => r.json()),
     ]);
     setDrivers(driversRaw as Driver[]);
     setConstructors(constructorsRaw as Constructor[]);
@@ -47,7 +48,7 @@ export default function Mapping() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(year); }, []);
 
   const saveDriver = async (driver: Driver) => {
     setSaving(driver.id);
@@ -82,6 +83,22 @@ export default function Mapping() {
       <div className="page-header">
         <div className="page-title">F1 Reference Mapping</div>
         <div className="page-subtitle">Map F1 image slugs and references to drivers and constructors.</div>
+      </div>
+
+      <div className="section">
+        <div className="mapping-controls">
+          <input
+            type="number"
+            className="year-input"
+            value={year}
+            min={2018}
+            max={2030}
+            onChange={e => setYear(Number(e.target.value))}
+          />
+          <button className="btn" onClick={() => load(year)} disabled={loading}>
+            {loading ? "Loading..." : "Load"}
+          </button>
+        </div>
       </div>
 
       <div className="section">
