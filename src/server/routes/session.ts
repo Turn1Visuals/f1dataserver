@@ -113,6 +113,17 @@ router.get("/cached", (_req, res) => {
   res.json(sessionManager.getCachedSessions());
 });
 
+// ── Snapshot ──────────────────────────────────────────────────────────────────
+
+router.get("/snapshot", (_req, res) => {
+  const snapshot = sessionManager.getSnapshot();
+  if (Object.keys(snapshot).length === 0) {
+    res.status(404).json({ error: "No snapshot available — no active session" });
+    return;
+  }
+  res.json(snapshot);
+});
+
 // ── Circuit layout ────────────────────────────────────────────────────────────
 
 router.get("/circuit", (_req, res) => {
