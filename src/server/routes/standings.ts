@@ -41,9 +41,9 @@ router.get("/:year/drivers", async (req, res) => {
     const constructorIds = [...new Set(standings.map(s => s.constructorId))];
     const constructors = await prisma.constructor.findMany({
       where: { id: { in: constructorIds } },
-      select: { id: true, name: true },
+      select: { id: true, name: true, f1Slug: true },
     });
-    const constructorMap = Object.fromEntries(constructors.map(c => [c.id, c.name]));
+    const constructorMap = Object.fromEntries(constructors.map(c => [c.id, c]));
 
     res.json({
       season: year,
@@ -56,8 +56,9 @@ router.get("/:year/drivers", async (req, res) => {
         code:        s.driver.code,
         name:        `${s.driver.firstName} ${s.driver.lastName}`,
         nationality: s.driver.nationality,
-        team:        constructorMap[s.constructorId] ?? s.constructorId,
+        team:        constructorMap[s.constructorId]?.name ?? s.constructorId,
         teamId:      s.constructorId,
+        teamSlug:    constructorMap[s.constructorId]?.f1Slug ?? null,
       })),
     });
   } catch (e) {
@@ -93,7 +94,7 @@ router.get("/:year/constructors", async (req, res) => {
         position: true,
         points:   true,
         wins:     true,
-        constructor: { select: { id: true, name: true, nationality: true } },
+        constructor: { select: { id: true, name: true, nationality: true, f1Slug: true } },
       },
     });
 
@@ -107,6 +108,7 @@ router.get("/:year/constructors", async (req, res) => {
         teamId:      s.constructor.id,
         name:        s.constructor.name,
         nationality: s.constructor.nationality,
+        teamSlug:    s.constructor.f1Slug ?? null,
       })),
     });
   } catch (e) {

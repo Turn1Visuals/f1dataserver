@@ -13,6 +13,7 @@ interface DriverStanding {
   nationality: string;
   team: string;
   teamId: string;
+  teamSlug: string | null;
 }
 
 interface ConstructorStanding {
@@ -22,6 +23,11 @@ interface ConstructorStanding {
   teamId: string;
   name: string;
   nationality: string;
+  teamSlug: string | null;
+}
+
+function teamLogoUrl(year: number, slug: string) {
+  return `https://media.formula1.com/image/upload/common/f1/${year}/${slug}/${year}${slug}logowhite.svg`;
 }
 
 interface StandingsResult {
@@ -142,7 +148,16 @@ export default function Standings() {
                       <span className="st-code">{s.code}</span>
                       <span className="st-name">{s.name}</span>
                     </td>
-                    <td className="st-team">{s.team}</td>
+                    <td className="st-team">
+                      {s.teamSlug && (
+                        <img
+                          className="team-logo"
+                          src={teamLogoUrl(data!.season, s.teamSlug)}
+                          alt=""
+                        />
+                      )}
+                      {s.team}
+                    </td>
                     <td className="st-wins">{s.wins}</td>
                     <td className="st-points">{s.points}</td>
                   </tr>
@@ -167,7 +182,16 @@ export default function Standings() {
                 {(data.standings as ConstructorStanding[]).map(s => (
                   <tr key={s.teamId}>
                     <td className="st-pos">{s.position}</td>
-                    <td className="st-name">{s.name}</td>
+                    <td className="st-name">
+                      {s.teamSlug && (
+                        <img
+                          className="team-logo"
+                          src={teamLogoUrl(data!.season, s.teamSlug)}
+                          alt=""
+                        />
+                      )}
+                      {s.name}
+                    </td>
                     <td className="st-nat">{s.nationality}</td>
                     <td className="st-wins">{s.wins}</td>
                     <td className="st-points">{s.points}</td>

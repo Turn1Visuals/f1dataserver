@@ -119,6 +119,20 @@
 .st-team,
 .st-nat { color: var(--text2); }
 
+.st-team,
+.st-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.team-logo {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .st-wins {
   color: var(--text3);
   font-family: var(--mono);
