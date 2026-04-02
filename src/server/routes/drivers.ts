@@ -42,4 +42,16 @@ router.get("/:id", async (req, res) => {
   res.json(driver);
 });
 
+// PATCH /drivers/:id/meta
+router.patch("/:id/meta", async (req, res) => {
+  const { f1Reference } = req.body as { f1Reference?: string | null };
+
+  const driver = await prisma.driver.update({
+    where: { id: req.params.id },
+    data: { f1Reference: f1Reference ?? null },
+  });
+
+  res.json(driver);
+});
+
 export default router;

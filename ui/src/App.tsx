@@ -4,6 +4,7 @@ import ApiDocs from "./pages/ApiDocs.tsx";
 import Schema from "./pages/Schema.tsx";
 import Session from "./pages/Session.tsx";
 import Standings from "./pages/Standings.tsx";
+import Mapping from "./pages/Mapping.tsx";
 import "./App.css";
 
 export default function App() {
@@ -36,6 +37,10 @@ export default function App() {
             <span className="nav-icon">◎</span>
             Standings
           </NavLink>
+          <NavLink to="/mapping" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
+            <span className="nav-icon">⇄</span>
+            Mapping
+          </NavLink>
         </nav>
 
         <div className="sidebar-footer">
@@ -54,6 +59,7 @@ export default function App() {
           <Route path="/schema" element={<Schema />} />
           <Route path="/session" element={<Session />} />
           <Route path="/standings" element={<Standings />} />
+          <Route path="/mapping" element={<Mapping />} />
         </Routes>
       </main>
     </div>

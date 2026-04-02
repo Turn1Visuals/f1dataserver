@@ -34,4 +34,16 @@ router.get("/:id", async (req, res) => {
   res.json(constructor);
 });
 
+// PATCH /constructors/:id/meta
+router.patch("/:id/meta", async (req, res) => {
+  const { f1Slug } = req.body as { f1Slug?: string | null };
+
+  const constructor = await prisma.constructor.update({
+    where: { id: req.params.id },
+    data: { f1Slug: f1Slug ?? null },
+  });
+
+  res.json(constructor);
+});
+
 export default router;

@@ -30,6 +30,7 @@ model Driver {
   nationality     String?
   headshotUrl     String? @map("headshot_url")
   countryCode     String? @map("country_code")
+  f1Reference     String? @map("f1_reference")
 
   source    String
   createdAt DateTime @default(now()) @map("created_at")
@@ -52,6 +53,7 @@ model Constructor {
   name        String
   nationality String?
   teamColour  String? @map("team_colour")
+  f1Slug      String? @map("f1_slug")
 
   source    String
   createdAt DateTime @default(now()) @map("created_at")
@@ -314,3 +316,4 @@ model PitStop {
   @@unique([sessionId, driverId, stopNumber])
   @@map("pit_stops")
 }
+
