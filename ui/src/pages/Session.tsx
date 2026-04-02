@@ -130,6 +130,16 @@ export default function Session() {
             return next.length > 500 ? next.slice(-500) : next;
           });
         }
+        if (msg.type === "snapshot") {
+          const state = (msg as unknown as { state: Record<string, unknown> }).state;
+          const entries = Object.entries(state).map(([topic, data]) => ({
+            ts: Date.now(), topic: `[snapshot] ${topic}`, data,
+          }));
+          setFeed(prev => {
+            const next = [...prev, ...entries];
+            return next.length > 500 ? next.slice(-500) : next;
+          });
+        }
       };
     }
     connect();
