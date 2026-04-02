@@ -17,6 +17,8 @@ export const TOPICS = [
   "WeatherData",
   "Position.z",
   "CarData.z",
+  "ChampionshipPrediction",
+  "DriverRaceInfo",
 ] as const;
 
 export type Topic = (typeof TOPICS)[number];

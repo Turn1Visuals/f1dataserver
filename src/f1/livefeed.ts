@@ -10,6 +10,7 @@ const TOPICS = [
   "TimingAppData", "TimingStats", "TrackStatus", "WeatherData",
   "Position.z", "CarData.z", "ContentStreams", "SessionData",
   "TimingData", "TopThree", "RcmSeries", "LapCount",
+  "ChampionshipPrediction", "DriverRaceInfo",
 ];
 
 export interface FeedEvent {
