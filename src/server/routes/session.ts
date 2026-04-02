@@ -1,6 +1,35 @@
 import { Router } from "express";
 import { sessionManager } from "../../f1/session-manager.js";
 import { loadToken } from "../../f1/auth.js";
+import { isCached, readCache } from "../../f1/cache.js";
+import { inflateRaw } from "zlib";
+import { promisify } from "util";
+
+const inflateRawAsync = promisify(inflateRaw);
+
+async function parseData(data: unknown): Promise<unknown> {
+  if (typeof data === "string") {
+    const buf = Buffer.from(data, "base64");
+    const raw = await inflateRawAsync(buf);
+    return JSON.parse(raw.toString("utf-8"));
+  }
+  return data;
+}
+
+function deepMerge(target: unknown, source: unknown): unknown {
+  if (source === null || typeof source !== "object" || Array.isArray(source)) return source;
+  if (target === null || typeof target !== "object" || Array.isArray(target)) target = {};
+  const t = target as Record<string, unknown>;
+  const s = source as Record<string, unknown>;
+  for (const [key, val] of Object.entries(s)) {
+    if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+      t[key] = deepMerge(t[key] ?? {}, val);
+    } else {
+      t[key] = val;
+    }
+  }
+  return t;
+}
 
 const router = Router();
 
@@ -114,6 +143,32 @@ router.get("/cached", (_req, res) => {
 });
 
 // ── Snapshot ──────────────────────────────────────────────────────────────────
+
+// GET /session/snapshot/final?path=2026/event/session/
+router.get("/snapshot/final", async (req, res) => {
+  const sessionPath = String(req.query["path"] ?? "");
+  if (!sessionPath) {
+    res.status(400).json({ error: "path query parameter required" });
+    return;
+  }
+  if (!isCached(sessionPath)) {
+    res.status(404).json({ error: "Session not cached" });
+    return;
+  }
+  try {
+    const timeline = readCache(sessionPath);
+    const state: Record<string, unknown> = {};
+    for (const event of timeline) {
+      const parsed = await parseData(event.data).catch(() => null);
+      if (parsed != null) {
+        state[event.topic] = deepMerge(state[event.topic] ?? {}, parsed);
+      }
+    }
+    res.json(state);
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
 
 router.get("/snapshot", (_req, res) => {
   const snapshot = sessionManager.getSnapshot();
