@@ -4,6 +4,18 @@ import "./Session.css";
 const BASE = import.meta.env.DEV ? "http://localhost:5320" : "";
 const WS_URL = import.meta.env.DEV ? "ws://localhost:5320/f1" : `ws://${location.host}/f1`;
 
+// "2026/2026-03-29_Japanese_Grand_Prix/2026-03-29_Race/" → "Japanese Grand Prix — Race"
+function formatSessionPath(p: string): string {
+  const parts = p.replace(/\/$/, "").split("/");
+  const session = parts[2] ?? parts[1] ?? p;
+  const stripDate = (s: string) => s.replace(/^\d{4}-\d{2}-\d{2}_/, "").replace(/_/g, " ");
+  if (parts.length >= 3) {
+    const event = stripDate(parts[1]!);
+    return `${event} — ${stripDate(session)}`;
+  }
+  return stripDate(session);
+}
+
 interface AuthStatus {
   loggedIn: boolean;
   expiresAt: string | null;
@@ -311,7 +323,7 @@ export default function Session() {
         <div className="section">
           <div className="section-label">Playback</div>
           <div className="s-panel">
-            <div className="s-session-path">{status.sessionPath}</div>
+            <div className="s-session-path">{status.sessionPath ? formatSessionPath(status.sessionPath) : ""}</div>
 
             {/* Progress bar */}
             <div className="s-progress-track">
@@ -407,7 +419,7 @@ export default function Session() {
             <div className="s-cached-list">
               {cached.map(s => (
                 <div key={s.sessionPath} className="s-cached-item">
-                  <span className="s-cached-path">{s.sessionPath}</span>
+                  <span className="s-cached-path">{formatSessionPath(s.sessionPath)}</span>
                   <span className="s-cached-size">{fmtBytes(s.sizeBytes)}</span>
                   <button
                     className="s-btn s-btn-sm"
