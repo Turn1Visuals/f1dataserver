@@ -89,12 +89,10 @@ export default function Session() {
   const [streamingStatus, setStreamingStatus] = useState<string | null>(null);
   const [eventTracker, setEventTracker] = useState<EventTracker | null>(null);
   const [feed, setFeed] = useState<Array<{ ts: number; topic: string; data: unknown }>>([]);
-  const [feedPaused, setFeedPaused] = useState(false);
   const [feedFilter, setFeedFilter] = useState("");
   const wsRef = useRef<WebSocket | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const feedEndRef = useRef<HTMLDivElement | null>(null);
-  const feedPausedRef = useRef(false);
 
   // Fetch auth + session status
   const refresh = useCallback(async () => {
@@ -126,7 +124,7 @@ export default function Session() {
           setStatus(msg as SessionStatus);
           setDelay(msg.delayMs ?? 0);
         }
-        if (msg.type === "data" && msg.topic && !feedPausedRef.current) {
+        if (msg.type === "data" && msg.topic) {
           setFeed(prev => {
             const next = [...prev, { ts: Date.now(), topic: msg.topic!, data: msg.data }];
             return next.length > 500 ? next.slice(-500) : next;
@@ -165,19 +163,17 @@ export default function Session() {
     return () => clearInterval(id);
   }, []);
 
-  // Keep pausedRef in sync
-  useEffect(() => { feedPausedRef.current = feedPaused; }, [feedPaused]);
-
-  // Auto-scroll feed to bottom when not paused
+  // Auto-scroll feed to bottom
   useEffect(() => {
-    if (!feedPaused) feedEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [feed, feedPaused]);
+    feedEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [feed]);
 
   const filteredFeed = useMemo(() => {
     if (!feedFilter) return feed;
     const f = feedFilter.toLowerCase();
     return feed.filter(e => e.topic.toLowerCase().includes(f));
   }, [feed, feedFilter]);
+
 
   // Auth actions
   const login = async () => {
@@ -388,9 +384,6 @@ export default function Session() {
                 onChange={e => setFeedFilter(e.target.value)}
                 style={{ flex: 1 }}
               />
-              <button className="s-btn" onClick={() => setFeedPaused(p => !p)}>
-                {feedPaused ? "▶ Resume" : "⏸ Pause"}
-              </button>
               <button className="s-btn" onClick={() => setFeed([])}>Clear</button>
               <span className="s-feed-count">{filteredFeed.length} msgs</span>
             </div>
