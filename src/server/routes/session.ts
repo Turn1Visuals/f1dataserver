@@ -142,6 +142,32 @@ router.get("/cached", (_req, res) => {
   res.json(sessionManager.getCachedSessions());
 });
 
+// ── Final state (fetch if needed + return merged end state) ───────────────────
+
+router.post("/final-state", async (req, res) => {
+  const { sessionPath } = req.body as { sessionPath?: string };
+  if (!sessionPath) {
+    res.status(400).json({ error: "sessionPath required" });
+    return;
+  }
+  try {
+    if (!isCached(sessionPath)) {
+      await sessionManager.loadSession(sessionPath);
+    }
+    const timeline = readCache(sessionPath);
+    const state: Record<string, unknown> = {};
+    for (const event of timeline) {
+      const parsed = await parseData(event.data).catch(() => null);
+      if (parsed != null) {
+        state[event.topic] = deepMerge(state[event.topic] ?? {}, parsed);
+      }
+    }
+    res.json(state);
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
 // ── Snapshot ──────────────────────────────────────────────────────────────────
 
 // GET /session/snapshot/final?path=2026/event/session/
