@@ -19,6 +19,7 @@
     "db:dedup-constructors": "tsx src/sync/scripts/dedup-constructors.ts",
     "db:dedup-drivers": "tsx src/sync/scripts/dedup-drivers.ts",
     "sync:standings-2026": "tsx src/sync/scripts/resync-standings-2026.ts",
+    "migrate:cache-layout": "tsx src/sync/scripts/migrate-cache-layout.ts",
     "tray": "cd tray && npm start"
   },
   "keywords": [],

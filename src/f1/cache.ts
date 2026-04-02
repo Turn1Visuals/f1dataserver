@@ -20,14 +20,13 @@ function getSessionsRoot(): string {
   return root;
 }
 
-// sessionPath looks like "2026/1234_BahrainGrandPrix/Race/"
-function sessionDir(sessionPath: string): string {
-  const clean = sessionPath.replace(/\/$/, "");
-  return join(getSessionsRoot(), clean);
-}
-
+// sessionPath looks like "2026/2026-03-29_Japanese_Grand_Prix/2026-03-29_Race/"
+// Stored as sessions/2026/2026-03-29_Japanese_Grand_Prix/2026-03-29_Race.ndjson
 function timelinePath(sessionPath: string): string {
-  return join(sessionDir(sessionPath), "timeline.ndjson");
+  const parts = sessionPath.replace(/\/$/, "").split("/");
+  const sessionName = parts.pop()!;
+  const eventDir = join(getSessionsRoot(), ...parts);
+  return join(eventDir, `${sessionName}.ndjson`);
 }
 
 export function isCached(sessionPath: string): boolean {
@@ -35,17 +34,17 @@ export function isCached(sessionPath: string): boolean {
 }
 
 export function writeCache(sessionPath: string, timeline: TimelineEvent[]): void {
-  const dir = sessionDir(sessionPath);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+  const file = timelinePath(sessionPath);
+  mkdirSync(dirname(file), { recursive: true });
   const lines = timeline.map((e) => JSON.stringify(e)).join("\n");
-  writeFileSync(timelinePath(sessionPath), lines + "\n", "utf-8");
-  console.log(`[f1/cache] Saved ${timeline.length} events → ${timelinePath(sessionPath)}`);
+  writeFileSync(file, lines + "\n", "utf-8");
+  console.log(`[f1/cache] Saved ${timeline.length} events → ${file}`);
 }
 
 export function appendCache(sessionPath: string, event: TimelineEvent): void {
-  const dir = sessionDir(sessionPath);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-  appendFileSync(timelinePath(sessionPath), JSON.stringify(event) + "\n", "utf-8");
+  const file = timelinePath(sessionPath);
+  mkdirSync(dirname(file), { recursive: true });
+  appendFileSync(file, JSON.stringify(event) + "\n", "utf-8");
 }
 
 export function readCache(sessionPath: string): TimelineEvent[] {
@@ -66,21 +65,27 @@ export function listCached(): CachedSession[] {
   const root = getSessionsRoot();
   const results: CachedSession[] = [];
 
-  function scan(dir: string, depth: number, prefix: string): void {
-    if (depth > 3) return;
-    for (const entry of readdirSync(dir)) {
-      const full = join(dir, entry);
-      const rel = prefix ? `${prefix}/${entry}` : entry;
-      if (statSync(full).isDirectory()) {
-        scan(full, depth + 1, rel);
-      } else if (entry === "timeline.ndjson") {
-        const sessionPath = prefix + "/";
-        const year = parseInt(prefix.split("/")[0] ?? "0");
-        results.push({ sessionPath, year, sizeBytes: statSync(full).size });
+  if (!existsSync(root)) return results;
+
+  for (const yearEntry of readdirSync(root)) {
+    if (yearEntry === "circuits") continue;
+    const year = parseInt(yearEntry);
+    if (isNaN(year)) continue;
+    const yearDir = join(root, yearEntry);
+    if (!statSync(yearDir).isDirectory()) continue;
+
+    for (const eventEntry of readdirSync(yearDir)) {
+      const eventDir = join(yearDir, eventEntry);
+      if (!statSync(eventDir).isDirectory()) continue;
+
+      for (const file of readdirSync(eventDir)) {
+        if (!file.endsWith(".ndjson")) continue;
+        const sessionName = file.slice(0, -7); // strip .ndjson
+        const sessionPath = `${yearEntry}/${eventEntry}/${sessionName}/`;
+        results.push({ sessionPath, year, sizeBytes: statSync(join(eventDir, file)).size });
       }
     }
   }
 
-  if (existsSync(root)) scan(root, 0, "");
   return results;
 }
