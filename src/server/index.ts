@@ -75,7 +75,7 @@ app.use("/swagger", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/swagger.json", (_req, res) => res.json(swaggerSpec));
 
 // Serve React UI
-const publicDir = join(__dirname, "../../public");
+const publicDir = process.env["PUBLIC_DIR"] ?? join(__dirname, "../../public");
 app.use(express.static(publicDir));
 app.get("*splat", (_req, res, next) => {
   const indexPath = join(publicDir, "index.html");

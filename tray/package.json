@@ -28,6 +28,7 @@
     "extraResources": [
       { "from": "resources/server.cjs", "to": "server.cjs" },
       { "from": "icon.png", "to": "icon.png" },
+      { "from": "../public", "to": "public" },
       { "from": "../node_modules/@prisma/adapter-pg", "to": "node_modules/@prisma/adapter-pg" },
       { "from": "../node_modules/@prisma/driver-adapter-utils", "to": "node_modules/@prisma/driver-adapter-utils" },
       { "from": "../node_modules/@prisma/debug", "to": "node_modules/@prisma/debug" },

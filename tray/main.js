@@ -91,6 +91,8 @@ function startServer() {
     ...process.env,
     NODE_PATH: IS_PACKAGED ? path.join(process.resourcesPath, "node_modules") : undefined,
     DOTENV_CONFIG_PATH: IS_PACKAGED ? envFile : undefined,
+    F1_DATA_DIR: IS_PACKAGED ? dataDir : undefined,
+    PUBLIC_DIR: IS_PACKAGED ? path.join(process.resourcesPath, "public") : undefined,
   };
 
   try {
