@@ -29,6 +29,7 @@
       { "from": "resources/server.cjs", "to": "server.cjs" },
       { "from": "icon.png", "to": "icon.png" },
       { "from": "../node_modules/@prisma/adapter-pg", "to": "node_modules/@prisma/adapter-pg" },
+      { "from": "../node_modules/@prisma/driver-adapter-utils", "to": "node_modules/@prisma/driver-adapter-utils" },
       { "from": "../node_modules/pg", "to": "node_modules/pg" },
       { "from": "../node_modules/pg-pool", "to": "node_modules/pg-pool" },
       { "from": "../node_modules/pg-types", "to": "node_modules/pg-types" },
