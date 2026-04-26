@@ -24,3 +24,6 @@ interesting_files/
 tray/icon.png
 tray/resources/server.cjs
 tray/dist/
+
+# TypeScript build output
+dist/
