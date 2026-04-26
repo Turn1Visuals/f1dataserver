@@ -3,12 +3,15 @@
 :root {
   --bg: #0f0f0f;
   --bg2: #161616;
-  --bg3: #1a1a1a;
-  --border: #222;
-  --border2: #2a2a2a;
-  --text: #e0e0e0;
-  --text2: #888;
-  --text3: #555;
+  --bg3: #1e1e1e;
+  --card: #161616;
+  --border: #2a2a2a;
+  --border2: #333;
+  --hover: rgba(255,255,255,0.04);
+  --text: #f0f0f0;
+  --text1: #e0e0e0;
+  --text2: #aaa;
+  --text3: #666;
   --accent: #e10600;
   --green: #4ade80;
   --blue: #3b82f6;

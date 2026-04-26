@@ -4,15 +4,9 @@
   align-items: center;
 }
 
-.mapping-controls {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
 .year-input {
   width: 80px;
-  background: var(--input-bg, #111);
+  background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.4rem 0.5rem;
@@ -28,7 +22,7 @@
 .tab {
   background: none;
   border: 1px solid var(--border);
-  color: var(--text-muted);
+  color: var(--text2);
   padding: 0.4rem 1rem;
   border-radius: 6px;
   cursor: pointer;
@@ -49,14 +43,14 @@
 .mapping-table th {
   text-align: left;
   padding: 0.5rem 0.75rem;
-  color: var(--text-muted);
+  color: var(--text2);
   font-weight: 500;
   border-bottom: 1px solid var(--border);
 }
 
 .mapping-table td {
   padding: 0.4rem 0.75rem;
-  border-bottom: 1px solid var(--border-subtle, #1a1a1a);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
 
@@ -65,7 +59,7 @@
 }
 
 .meta-input {
-  background: var(--input-bg, #111);
+  background: var(--bg2);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 0.3rem 0.5rem;
@@ -82,7 +76,7 @@
 
 .driver-code {
   font-family: monospace;
-  color: var(--text-muted);
+  color: var(--text2);
   font-size: 0.8rem;
 }
 
@@ -97,6 +91,6 @@
 }
 
 .meta-input-default {
-  color: var(--text-muted);
+  color: var(--text2);
   font-style: italic;
 }
