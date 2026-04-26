@@ -7,40 +7,36 @@ import Standings from "./pages/Standings.tsx";
 import Mapping from "./pages/Mapping.tsx";
 import "./App.css";
 
+const nav = [
+  { to: "/",          end: true,  icon: "⬡", label: "Home"      },
+  { to: "/docs",      end: false, icon: "⚡", label: "API Docs"  },
+  { to: "/schema",    end: false, icon: "◈", label: "Schema"    },
+  { to: "/session",   end: false, icon: "▶", label: "Session"   },
+  { to: "/standings", end: false, icon: "◎", label: "Standings" },
+  { to: "/mapping",   end: false, icon: "⇄", label: "Mapping"   },
+];
+
 export default function App() {
   return (
     <div className="app">
       <aside className="sidebar">
         <div className="sidebar-logo">
           <div className="logo-dot" />
-          <span>F1 Data Server</span>
+          <span className="logo-text">F1 Data Server</span>
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink to="/" end className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <span className="nav-icon">⬡</span>
-            Home
-          </NavLink>
-          <NavLink to="/docs" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <span className="nav-icon">⚡</span>
-            API Docs
-          </NavLink>
-          <NavLink to="/schema" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <span className="nav-icon">◈</span>
-            Schema
-          </NavLink>
-          <NavLink to="/session" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <span className="nav-icon">▶</span>
-            Session
-          </NavLink>
-          <NavLink to="/standings" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <span className="nav-icon">◎</span>
-            Standings
-          </NavLink>
-          <NavLink to="/mapping" className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}>
-            <span className="nav-icon">⇄</span>
-            Mapping
-          </NavLink>
+          {nav.map(({ to, end, icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+            >
+              <span className="nav-icon">{icon}</span>
+              {label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="sidebar-footer">
@@ -48,18 +44,18 @@ export default function App() {
             <span className="nav-icon">♡</span>
             Health
           </a>
-          <div className="sidebar-brand">TURN1VISUALS</div>
+          <div className="sidebar-brand">Turn1Visuals</div>
         </div>
       </aside>
 
       <main className="content">
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/docs" element={<ApiDocs />} />
-          <Route path="/schema" element={<Schema />} />
-          <Route path="/session" element={<Session />} />
+          <Route path="/"          element={<Home />}      />
+          <Route path="/docs"      element={<ApiDocs />}   />
+          <Route path="/schema"    element={<Schema />}    />
+          <Route path="/session"   element={<Session />}   />
           <Route path="/standings" element={<Standings />} />
-          <Route path="/mapping" element={<Mapping />} />
+          <Route path="/mapping"   element={<Mapping />}   />
         </Routes>
       </main>
     </div>

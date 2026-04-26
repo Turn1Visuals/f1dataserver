@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import { createServer } from "http";
 import swaggerUi from "swagger-ui-express";
 import { fileURLToPath } from "url";
@@ -28,6 +29,7 @@ const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT ?? 5320;
 
+app.use(cors());
 app.use(express.json());
 
 // Data API

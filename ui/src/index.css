@@ -1,23 +1,31 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0f0f0f;
-  --bg2: #161616;
-  --bg3: #1e1e1e;
-  --card: #161616;
-  --border: #2a2a2a;
-  --border2: #333;
-  --hover: rgba(255,255,255,0.04);
-  --text: #f0f0f0;
-  --text1: #e0e0e0;
-  --text2: #aaa;
-  --text3: #666;
-  --accent: #e10600;
-  --green: #4ade80;
-  --blue: #3b82f6;
-  --amber: #f59e0b;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --mono: ui-monospace, Consolas, "Courier New", monospace;
+  /* Surfaces — explicit oklch greys, no opacity */
+  --bg:        oklch(0% 0 0);       /* #000 */
+  --surface:   oklch(7% 0 0);       /* ~#111 */
+  --surface-2: oklch(11% 0 0);      /* ~#1c1c1c */
+  --surface-3: oklch(15% 0 0);      /* ~#262626 */
+
+  /* Borders — dark enough to read on surfaces, fully opaque */
+  --border:    oklch(22% 0 0);      /* replaces rgba(255,255,255,0.07) */
+  --border-2:  oklch(30% 0 0);      /* replaces rgba(255,255,255,0.13) */
+
+  /* Text — derived with relative color, fully opaque */
+  --text:   oklch(98% 0 0);
+  --text-2: oklch(from var(--text) calc(l * 0.60) c h);
+  --text-3: oklch(from var(--text) calc(l * 0.50) c h);
+
+  /* Accent colours in oklch */
+  --accent: oklch(45% 0.24 27);     /* #e10600 */
+  --green:  oklch(65% 0.19 142);    /* #22c55e */
+  --amber:  oklch(75% 0.17 75);     /* #f59e0b */
+  --blue:   oklch(60% 0.21 250);    /* #3b82f6 */
+  --red:    oklch(58% 0.22 27);     /* #ef4444 */
+
+  --font:   "Inter Variable", system-ui, sans-serif;
+  --mono:   "JetBrains Mono", ui-monospace, monospace;
+  --radius: 5px;
 }
 
 html, body, #root {
@@ -26,5 +34,10 @@ html, body, #root {
   color: var(--text);
   font-family: var(--font);
   font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv01", "cv02", "cv03";
 }
+
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font); }

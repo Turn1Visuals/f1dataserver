@@ -248,20 +248,20 @@ export default function Session() {
         <div className="s-row">
           <div className="s-card">
             <div className="s-card-label">WebSocket</div>
-            <div className={`s-badge ${wsConnected ? "green" : "red"}`}>
+            <span className={`badge ${wsConnected ? "badge-green" : "badge-red"}`}>
               {wsConnected ? "Connected" : "Disconnected"}
-            </div>
+            </span>
           </div>
           <div className="s-card">
             <div className="s-card-label">F1 Account</div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div className={`s-badge ${auth.loggedIn ? "green" : auth.pending ? "amber" : "red"}`}>
-                {auth.pending ? "Logging in..." : auth.loggedIn ? "Logged in" : "Not logged in"}
-              </div>
+              <span className={`badge ${auth.loggedIn ? "badge-green" : auth.pending ? "badge-amber" : "badge-red"}`}>
+                {auth.pending ? "Logging in…" : auth.loggedIn ? "Logged in" : "Not logged in"}
+              </span>
               {auth.loggedIn
                 ? <button className="s-btn s-btn-danger" onClick={logout}>Logout</button>
                 : <button className="s-btn" onClick={login} disabled={auth.pending}>
-                    {auth.pending ? "Opening browser..." : "Login with F1"}
+                    {auth.pending ? "Opening browser…" : "Login with F1"}
                   </button>
               }
             </div>
@@ -271,15 +271,15 @@ export default function Session() {
           </div>
           <div className="s-card">
             <div className="s-card-label">Session Mode</div>
-            <div className={`s-badge ${status?.mode === "idle" ? "dim" : status?.mode === "live" ? "green" : "blue"}`}>
+            <span className={`badge ${status?.mode === "idle" ? "badge-dim" : status?.mode === "live" ? "badge-green" : "badge-blue"}`}>
               {status?.mode ?? "idle"}
-            </div>
+            </span>
           </div>
           <div className="s-card">
             <div className="s-card-label">F1 Streaming</div>
-            <div className={`s-badge ${streamingStatus === "Available" ? "green" : streamingStatus == null ? "dim" : "red"}`}>
+            <span className={`badge ${streamingStatus === "Available" ? "badge-green" : streamingStatus == null ? "badge-dim" : "badge-red"}`}>
               {streamingStatus ?? "Unknown"}
-            </div>
+            </span>
           </div>
         </div>
       </div>
@@ -296,7 +296,8 @@ export default function Session() {
               const start = new Date(`${t.startTime}${t.gmtOffset}`);
               return (
                 <div key={i} className={`s-timetable-row ${t.state}`}>
-                  <span className={`s-badge ${t.state === "live" ? "green" : t.state === "completed" ? "dim" : "blue"}`} style={{ minWidth: 80, justifyContent: "center" }}>
+                  <span className={`badge ${t.state === "live" ? "badge-green" : t.state === "completed" ? "badge-dim" : "badge-blue"}`}
+                    style={{ minWidth: 80, justifyContent: "center" }}>
                     {t.state}
                   </span>
                   <span className="s-timetable-label">{t.description}</span>
@@ -472,7 +473,7 @@ export default function Session() {
                         <span className="s-session-name">{s.name}</span>
                         <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text3)" }}>{s.path}</span>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {s.cached && <span className="s-badge green" style={{ fontSize: 10 }}>cached</span>}
+                          {s.cached && <span className="badge badge-green" style={{ fontSize: 10 }}>cached</span>}
                           <button
                             className="s-btn s-btn-sm"
                             disabled={loadingSession === s.path}
